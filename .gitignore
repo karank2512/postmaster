@@ -1,3 +1,6 @@
 TASK.md
 lane.log
 .venv/
+__pycache__/
+.pytest_cache/
+reports/
