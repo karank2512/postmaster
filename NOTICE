@@ -1,0 +1,35 @@
+Postmaster
+Copyright (c) 2026 Karan Kapur
+
+What the MIT License in this repository covers
+----------------------------------------------
+
+The LICENSE file applies to the original source code in this repository
+(conformance/, mock_agentmail/, tests/) and to the documentation text written
+for it.
+
+It does not apply to:
+
+- docs/demo.gif and docs/demo.mp4. These media files are not offered under the
+  MIT License, and no reuse rights to them are granted here.
+- Text quoted in README.md from third-party issue reports. Each quote links to
+  its source and remains the work of its author.
+- Anything else in the repository that is separately credited to someone else.
+
+Reference to agentmail-mcp
+--------------------------
+
+mock_agentmail/ is a local stand-in written for this project. It is modelled
+on the public interface of AgentMail's MCP server and on the public issues
+linked in README.md. Tool names and argument shapes follow that project
+loosely:
+
+    agentmail-mcp
+    https://github.com/agentmail-to/agentmail-mcp
+    MIT License, Copyright (c) 2026 AgentMail, Inc.
+
+If any portion of this repository is derived from agentmail-mcp, that portion
+remains subject to the agentmail-mcp MIT License and the copyright notice
+above.
+
+This project is not affiliated with, reviewed by, or endorsed by AgentMail.

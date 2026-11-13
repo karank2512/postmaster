@@ -6,11 +6,13 @@
 
 *15 second demo: [docs/demo.mp4](docs/demo.mp4)*
 
-One idea: when an agent uses email over MCP, the failure is usually silent. A model drops the subject and body and the send still "succeeds". A sign-in token expires and every call 401s until a human re-authenticates. A brand-new inbox 404s for a second and the agent concludes it does not exist. Postmaster is a conformance suite for AgentMail's MCP server: it runs real agent tasks, injects those failure modes, and checks every run against what actually happened on the server, not what the agent claims. One command: `python3 -m conformance run`.
+One idea: when an agent uses email over MCP, the failure is usually silent. A model drops the subject and body and the send still "succeeds". A sign-in token expires and every call 401s until a human re-authenticates. A brand-new inbox 404s for a second and the agent concludes it does not exist.
+
+Postmaster is a local demonstration of a conformance suite for that loop. A scripted agent (not an LLM) runs 4 email tasks against an in-process mock modelled on AgentMail's MCP server, across 7 scenarios built from 5 fault flags, for 154 checks per run. Each run is checked against what the mock server actually stored, not what the agent claims. Nothing here connects to AgentMail's real server, and no real model clients have been run. One command: `python3 -m conformance run`.
 
 ## What this is (and what it is not)
 
-Postmaster is a cross-model MCP conformance suite with an agent-readable error contract. It answers one question: when an agent uses AgentMail over MCP, did the thing it meant to do actually happen, and when it did not, could the agent tell why?
+Postmaster is a prototype MCP conformance suite with an agent-readable error contract. The design is meant to be cross-model, with the same tasks run against different model clients. Today the model quirks are flags on a simulated client and no real model has been run (see [Limits](#limits)). It answers one question: when an agent uses AgentMail over MCP, did the thing it meant to do actually happen, and when it did not, could the agent tell why?
 
 It is not a client library or a wrapper. AgentMail's MCP server and SDKs already send and receive mail. Postmaster checks the whole loop the way an agent experiences it: was the schema accepted, what happened on the server, and does the agent's own story match, with every failure tied to the exact tool call ID.
 
@@ -25,11 +27,13 @@ These failure modes are not hypothetical. Each one comes from a public issue, an
 - Sending right after `create_inbox` returns 404 "Inbox not found" for about 1 to 2 seconds. An agent reading that 404 concludes the inbox does not exist. [agentmail-node#14](https://github.com/agentmail-to/agentmail-node/issues/14)
 - A reply labelled `unauthenticated` is invisible to list and search over MCP: "Legitimate inbound mail is unreachable through the MCP server." [agentmail-mcp#38](https://github.com/agentmail-to/agentmail-mcp/issues/38)
 
+Five of these six are reproduced here as fault flags (see [Failure modes reproduced](#failure-modes-reproduced)). The tool-result rejection in agentmail-mcp#5 is listed for context and is not reproduced.
+
 A conformance suite catches the next one before a user files the issue.
 
 ## What Postmaster does
 
-Postmaster runs 7 scenarios through 4 agent tasks (onboard and send, reply with attachment, find an unauthenticated inbound message, survive a token refresh) against a local mock of the AgentMail MCP server: 154 checks per run.
+Postmaster runs 7 scenarios through 4 scripted agent tasks (onboard and send, reply with attachment, find an unauthenticated inbound message, survive a token refresh) against a local mock of the AgentMail MCP server: 22 checks per scenario, 154 per run. The 7 scenarios are one healthy run, five single-fault runs (one for each of the 5 fault flags), and one repeat of the fresh-inbox 404 fault with the error contract on.
 
 - **Healthy runs pass.** The checks don't flag a correct server.
 - **Each injected fault breaks only the tasks it should**, and every failed check is classified into a named error kind with the trace behind it.
@@ -133,3 +137,7 @@ python3 -m pytest -q    # 29 passed
 - **The server is a mock.** Everything runs against a local stand-in for the AgentMail MCP server, built from the open-source agentmail-mcp repo and public issues. There is no AgentMail account, no API key, and no network traffic.
 - **The agent is scripted, not an LLM.** It plays a careful agent: it trusts tool results and retries only when told how long to wait. The model quirks are flags on the simulated client. Next step: real model clients behind the same `call(tool, args)` interface, turning scenarios into model x harness rows.
 - **Not affiliated with AgentMail.** The `mock_agentmail` package name only describes the API being modeled. This project is not made, reviewed, or endorsed by AgentMail.
+
+## License
+
+Original source code is under the [MIT License](LICENSE). The demo media in `docs/` (`demo.gif`, `demo.mp4`) and the text quoted from the linked third-party issues are not covered by that grant. `mock_agentmail/` is modelled on the public interface of [agentmail-mcp](https://github.com/agentmail-to/agentmail-mcp) (MIT License, Copyright (c) 2026 AgentMail, Inc.); see [NOTICE](NOTICE).
